@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>토이프로젝트<br><br>
+  <h1>🌳 토이프로젝트<br><br>
   </h1>
 </div><br>
 <h4> 💭 Language : Python <br><br>
