@@ -1,153 +1,185 @@
 <div align="center">
   <h1>🌳 토이프로젝트<br><br>
-  </h1>
-</div><br>
+  ⚡ 포켓몬스터 밸런스 분석</h1>
+</div>
+
 <h4> 💭 Language : Python <br><br>
-     📝 Library : Pandas, Numpy, Matplotlib<br><br>
+     📝 Library : Pandas, Numpy, Matplotlib, seaborn <br><br>
      🛠  Tool : Google Colab <br><br>
-     📅 진행기간 : 2022.01.17 ~ 2023.01.31</h4><br>
-
-
-# 🔊 프로젝트 개요
-* 해양 환경의 오염률이 꾸준히 상승세 유지<br>
-* 해양 오염이 해양 생태계를 교란시키고, 이는 해양 생물의 떼죽음 현상을 야기<br>
-* 해양 오염 방지를 위한 정책은 과거의 데이터만으로 수질관리 계획을 수립한다는 한계점<br>
-* 정부는 해양 오염의 심각성이 우려되는 해안을 '환경관리해역'으로 선정하여 오염물질의 총량을 규제하는 방식으로 관리하는 등 다양한 <br>정책 도입
-<br><br>
-
-# 💡 분석 기획
-* 해양오염지수를 예측하고, 해양오염 문제를 미리 예방에 일조<br>
-* 2019~2020년 약 2년치의 해양환경측정 데이터를 활용하여 분석, EDA, 모델링 및 예측 수행, 프로젝트의 전체적인 흐름 및 아키텍처 구상<br>
-* 통계 분석, 머신러닝 등 다양한 분석 방법을 활용하여 해양오염지수 예측<br><br>
+     📅 진행기간 : 2022.01.17 ~ 2022.01.31</h4>
+     
 <br>
 
-
-# 🔎 데이터 수집
-|데이터셋|출처|
-|------|:------:|
-|해양환경측정망 데이터|관할해역해양정보 공동활용시스템|
-|국가 해양생태계 데이터|해양환경공단|
-|갯끈풀 위치 데이터|네이처링|
-|바다 격자 정보(격자 3단계)shp 데이터|바다누리 해양정보 플랫폼|
-|갯벌 현황도 shp데이터|해양수산부 연안 포털|
-
+# 🔎 기술통계
+* 데이터 세트를 로드하여 기술통계를 통해 누락된 값 확인
 <br>
-
 
 # 🔎 데이터 전처리
 |전처리|방법|
 |------|:-------------:|
-|QGIS를 이용한 데이터 매핑|value값이 처음부터 끝까지 동일한 feature를 삭제|
-|결측치 제거|전체 행 대비 결측치 비율이 30%가 넘어가는 컬럼을 삭제|
-|데이터 정규화(MinMaxScaler)|해양 화학물질의 경우 MinMaxScaler를 이용|
-|동해 관측소 삭제|모두 동일한 화학적 산소 농도 값을 모델링 과적합 방지를 위해 삭제|
-|불필요한 컬럼 삭제|상관관계 값이 0.15미만에 해당하는 컬럼들은 전부 삭제|
-|차원축소(PCA)|변수중요도가 낮게 측정된 두 개의 feature에 PCA를 적용|
-|중복 데이터 처리|정선해양관측 데이터와 해양환경관측 데이터의 중복 컬럼 처리|
+|불필요한 컬럼 삭제|분석에 불필요한 컬럼들은 전부 삭제|
+|값 대체|'Is_Legendary'컬럼 값 0은 "Non-legendary", 1은 "Legendary"로 대체|
+|컬럼 결합|'Type1' 컬럼과 'Type2' 컬럼을 단일 유형으로 결합|
+|형태 변환|능력 컬럼의 값을 리스트 형태로 변환|
+|컬럼 생성|포켓몬스터별 능력의 개수 컬럼 생성|
+|컬럼 생성|BMI 컬럼 생성|
+|Nan값 대체|포획률의 30 (Meteorite)255 (Core) 값 Nan으로 변경|
 
 <br><br>
 
-# 🔎 QGIS를 이용한 데이터 매핑
-## 1) 관측소 및 갯끈풀 위치 시각화
-<h3 align="center"><img src="https://github.com/LHG-Git/project/assets/100845169/3e1da9b8-d9ca-4ba1-9640-91a3269f9fed"></h3> <br><br>
+# 📊 EDA (탐색적 데이터 분석)
+## 1) 세대별 포켓몬 수
+<h3 align="center"><img src= "https://github.com/LHG-Git/Pokemon_Balance_Analysis/assets/100845169/7791f49f-38f5-4f6a-a2b3-937814d21e9e"></h3>
 
-* 위의 그림과 같이, 비슷한 구역에 관측소가 붙어있는 것을 확인할 수 있음
-* 이런 경우 바다 격자 정보를 이용하여 해안 구역을 설정한 뒤, 한 격자에 들어오는 관측소는 하나의 관측소로 통합 시킬 것을 고려함
+* 홀수 세대는 짝수 세대에 비해 더 많은 포켓몬이 존재
 <br>
 
-## 2) 바다 격자 정보 세분화
-<h3 align="center"><img src="https://github.com/LHG-Git/project/assets/100845169/0d3cb4ee-9998-49bf-93a5-9ef65ccec982"></h3> <br><br>
 
-* 한 격자내에 속해있는 관측소는 하나의 관측소로 간주하기 위한 작업
-* 수집한 격자정보의 경우 3단계 격자 정보에 해당하였고, 3단계의 정보를 이용하여 해안 구역을 선정할 경우 반경 범위가 상당히 광범위했기 때문에 구체적인 지역 선정이 어렵다고 판단하여, 더 세분화하기 위한 작업인 4단계 격자로 지역을 나누는 작업 진행
+## 2) 가장 흔한 유형
+<h3 align="center"><img src= https://github.com/LHG-Git/Pokemon_Balance_Analysis/assets/100845169/f84f8f58-23d1-49e6-a218-d35d2695f293></h3>
+
+* 물 -> 노멀 -> 풀 ... 의 순으로 타입이 많다.
+
 <br>
 
-## 3) 역거리 가중 보간법(IDW)을 이용한 최종 데이터셋 구성
-<h3 align="center"><img src="https://github.com/LHG-Git/project/assets/100845169/9a86e60b-87c0-4276-b0fa-ea90423a100f"></h3> <br><br>
+## 3) 보조 타입 여부
+<h3 align="center"><img src= https://github.com/LHG-Git/Pokemon_Balance_Analysis/assets/100845169/43d0fa9a-7fc3-4833-85de-59e5a95c5209></h3>
 
-* 해양환경측정망, 해양생태계 데이터와 갯끈풀의 위치 속성을 QGIS에 표시
+* 포켓몬의 거의 절반이 보조 유형이 없다.
+<br>
+
+## 4) 타입별 유형1과 유형2 비교
+<h3 align="center"><img src= https://github.com/LHG-Git/Pokemon_Balance_Analysis/assets/100845169/aaff2034-3f86-4086-a08b-1d4d48741285></h3><br>
+
+### 4-A) 가장 일반적인 유형 조합 / 전설 포켓몬의 가장 일반적인 유형
+<h3 align="center"><img src= https://github.com/LHG-Git/Pokemon_Balance_Analysis/assets/100845169/c5e27e8c-ec27-4984-8b2d-205030678f80></h3>
+
+* 첫 번째: 일반 + 비행 / 두 번째: 풀 + 독 / 세 번째: 벌레 + 비행
+* 전설의 포켓몬의 가장 일반적인 유형은 Psychic
+<br>
+
+### 4-B) 세대에 따른 기본 유형의 차이
+<h3 align="center"><img src= https://github.com/LHG-Git/Pokemon_Balance_Analysis/assets/100845169/e8e2ce2a-129c-4423-84a8-e51fde62c8ef></h3>
+
+* 1세대: 암흑, 강철, 비행 그리고 2세대에는 용, 비행같은 타입이 존재하지 않음
+* 비행은 5,6 세대에서만 기본 유형으로 존재한다.
+* 1세대에는 독, 3세대에는 강철, 5세대에는 어둠과 사이킥, 6세대에는 페어리 타입이 유난히 많다.
+<br>
+
+## 5) 가장 잡기 쉬운 포켓몬스터 세대
+<h3 align="center"><img src= https://github.com/LHG-Git/Pokemon_Balance_Analysis/assets/100845169/edd8af1b-784e-4b76-8306-8beba9e9fc65></h3>
+
+* 3세대가 가장 포획하기 쉬운 포켓몬이며, 4세대가 가장 어렵다.
+* 전설의 포켓몬은 6세대부터 잡기가 더 쉽다.
+<br>
+
+## 6) 가장 잡기 쉬운 포켓몬스터
+<h3 align="center"><img src= https://github.com/LHG-Git/Pokemon_Balance_Analysis/assets/100845169/19efde61-eeaa-4f05-a142-e79f75b2503d></h3>
+
+* 페어리 타입이 가장 잡기 쉬운 포켓몬이며, 드래곤이 가장 어렵다.
+* 잡기 가장 쉬운 전설의 포켓몬은 풀과 벌레 타입이다.
+<br>
+
+## 7) 포켓몬은 보통 몇 가지 능력을 가지고 있는가
+<h3 align="center"><img src= https://github.com/LHG-Git/Pokemon_Balance_Analysis/assets/100845169/fa3f8dc7-751e-4aa3-bc8f-c24369f0e32d></h3>
+
+* 비전설의 포켓몬의 가장 일반적인 능력 개수는 3개이며, 대부분의 전설의 포켓몬은 1개의 능력만 가지고 있다.
+<br>
+
+## 8) 피지컬이 좋은 포켓몬스터는?
+<h3 align="center"><img src= https://github.com/LHG-Git/Pokemon_Balance_Analysis/assets/100845169/77fa5f99-2f23-4d2d-904a-802962adc481></h3>
+
+* 가장 키가 큰 포켓몬 5개 중 2개는 전설의 포켓몬이며, 무거운 포켓몬 5개 중 4개는 전설의 포켓몬이다.
+* 셀레스틸라는 몸무게와 키 모두 top5안에 드는 유일한 포켓몬이다.
+<br>
+
+## 9) BMI가 가장 높은 포켓몬스터 / BMI가 가장 낮은 포켓몬스터
+<h3 align="center"><img src= https://github.com/LHG-Git/Pokemon_Balance_Analysis/assets/100845169/48a6ae87-ed98-4bcc-91bc-95f74bf17877></h3>
+
+* BMI가 가장 높은 포켓몬스터는 Cosmoem이다.
+* Haunter와 진화 이전 Gastly가 가장 낮으며, Dratini와 진화버전 Gragonair가 그 뒤를 잇는다.
+<br>
+
+## 10) 최고 세대
+<h3 align="center"><img src= https://github.com/LHG-Git/Pokemon_Balance_Analysis/assets/100845169/7789826e-a908-49b3-a404-84ce4099e2c3></h3>
+
+* 일반 포켓몬 중에서는 4세대에 최고의 능력치를 가진 포켓몬이 있고, 전설의 포켓몬 중에서는 3세대에 최고의 능력치를 가진 포켓몬이 있다.
+<br>
+
+## 11) 속성별 상관관계
+### 11-A) 일반 포켓몬스터
+<h3 align="center"><img src= https://github.com/LHG-Git/Pokemon_Balance_Analysis/assets/100845169/ec624a17-70eb-4498-93f7-3cd75429ecea></h3>
+
+* 일반 포켓몬에 대해
+>* hp와 sp_attack, sp_defense와 attack 사이에는 양의 관계가 있다. 하지만 방어와는 낮은 상관관계를 보여주고있다. 방어가 높은 포켓몬이 더 높은 hp를 가질것이라 생각하였지만 그게 아니었다.
+>* attack은 defense와 가장 밀접한 관계가 있다.
+>* Defense는 sp_defense와 가장 강한 관계가 있다.
+>* Speed는 defense와 매우 약한 음의 관계가 있다.
+<br>
+
+### 11-B) 전설 포켓몬스터
+<h3 align="center"><img src= https://github.com/LHG-Git/Pokemon_Balance_Analysis/assets/100845169/5aeb433e-2d40-4f4f-921d-07e149646bbb></h3>
+
+* 전설의 포켓몬에 대해
+>* 전설의 포켓몬은 attack과 sp_defense, 방어와 sp_attack의 관계가 음의 관계로 바뀐다. 또한 attack과 speed가 양의 관계로, defense와 speed의 관계가 음의 관계로 더 강해졌다.
+>* 즉, 공격수 타입의 전설의 포켓몬은 공격력과 스피드가 더 빨라졌고 수비수 타입의 전설의 포켓몬은 방어를 높이고 스피드를 낮추며 밸런스를 조절하였다.
+>* 그렇다면, 공격적인 전설의 포켓몬은 밸런스가 매우 붕괴된게 아닌가..? 공격과 스피드를 둘다 줬으니!!
+<br>
+
+## 12) 가장 좋은 유형은?
+<h3 align="center"><img src= https://github.com/LHG-Git/Pokemon_Balance_Analysis/assets/100845169/5dace01c-195c-4c01-9177-5992ddcae1c6></h3>
+
+* 일반 포켓몬:
+>* Top 5 types - attack: fighting, dragon, ground, dark, steel
+>* Top 5 types - sp_attack: psychic, electric, fairy, fire, ghost
+>* Top 5 types - defense: steel, rock, ground, ghost, ice
+>* Top 5 types - sp_defense: steel, fairy, ghost, psychic, dragon
+>* Top 5 types - hp: fairy, normal, fighting, ice, ground
+>* Top 5 types - speed: flying, electric, fire, dark, dragon
+>* Top 5 types - base_total: ghost, steel, fighting, fairy and ice
+* <strong>불, 어둠, 용 타입의 포켓몬은 attack, sp_attack, speed가 top5에 들기 때문에 공격위주의 포켓몬이다.</strong>
+* <strong> 요정, 얼음, 땅 타입의 포켓몬은 defense, sp_defense, hp가 top5에 들기 때문에 방어위주의 포켓몬이다.</strong>
+<br>
+
+* 전설의 포켓몬:
+>* Top 5 types - attack: ground, bug, fairy, normal, dragon
+>* Top 5 types - sp_attack: dragon, dark, fairy, ground, electric
+>* Top 5 types - defense: ground, steel, normal, dragon, ghost
+>* Top 5 types - sp_defense: ice, water, normal, psychic, rock
+>* Top 5 types - hp: ghost, dark, fairy, normal, dragon
+>* Top 5 types - speed: flying, normal, grass, rock, electric
+>* Top 5 types - base_total: dragon, ground, fairy, ghost, normal
+* <strong>일반, 전기 타입의 포켓몬이 공격하기 좋은 포켓몬</strong>
+* <strong>고스트, 노멀, 드래곤이 방어하기 좋은 포켓몬</strong>
+<br>
+
+## 13) 유형 효율성 분석
+<h3 align="center"><img src= https://github.com/LHG-Git/Pokemon_Balance_Analysis/assets/100845169/8bbfb770-d5f8-483a-b251-15407eb52747></h3>
+
+* 전기는 땅 타입에 약하고, 노말은 격투 타입에 약하다는 것을 강조하기 한다. 신기하게도 유령은 유령끼리 약하고 비행은 얼음에 극도로 약하다는 인사이트를 도출했다.
+<br>
+
+## 14) 최고의 포켓몬스터는?
+<h3 align="center"><img src= https://github.com/LHG-Git/Pokemon_Balance_Analysis/assets/100845169/b0bacd85-0ab5-48ef-88f6-fb355a95b01b></h3>
+
+* 뮤츠와 레쿠자가 가장 좋은 포켓몬으로 선정되었다.
+<br>
+
+## 📄 분석결과 요약
+* 물타입의 포켓몬이 가장 많고, 그 다음이 노멀과 풀이다.
+
+* 3세대가 가장 잡기 쉬운 포켓몬이며, 4세대는 가장 어렵다.
   
-* 표시된 각 포인트 지점 사이에 비어있는 사이값을 구하기 위하여, 공간보간법을 사용할 것을 고려
+* 전설의 포켓몬은 6세대로 진입하면서 부터 포획하기가 조금 더 수월해졌다.
   
-* 특정 포인트와 속성값을 이용하여 연속적인 공간의 속성값을 도출하여, 한 격자내에 포함된 포인트는 하나의 관측소로 매핑하고자 하였고, 이때 공간보간법중 하나인 역거리 가중 보간법(IDW)를 활용
+* 페어리 타입은 가장 잡기 쉬운 포켓몬이고, 드래곤이 가장 어렵다.
   
-* 포인트 및 속성별 연속적인 래스터 데이터를 생성한 뒤 벡터로 변환하여, 이전에 세분화시킨 4단계 격자에 벡터 데이터를 할당
+* 잡기 쉬운 전설의 포켓몬은 풀가 벌레 타입이다.
   
-* 그 후, 작게 분할된 벡터 데이터의 변수들을 평균값을 취해 격자별 관측소 및 갯끈풀 속성 데이터를 생성하여 최종데이터셋을 완성
-
-<br><br>
-
-# 📊 EDA(탐색적 데이터 분석)
-## 1) 상관관계 분석
-<h3 align="center"><img src= "https://github.com/LHG-Git/project/assets/100845169/455f32d5-2172-4441-b1c4-04de9ea380bf"></h3>
-
-* feature간의 상관관계가 높은 경우가 있어, 다중공선성이 우려<br>
-
-* 추후 상관계수가 높은 각 입력 변수를 제거/추가하며 회귀계수의 변동정도 파악, 차원축소 PCA 적용, 정규화, VIF(Variance Inflation Factor)를 이용한 변수선택 등 다양한 방법론을 적용시킬 것을 고려<br>
-
-* 상관관계 분석 시각화를 통해 target값인 화학적 산소농도와 상관관계 값이 0.15미만에 해당하는 컬럼은 전부 삭제를 진행
-
-<br>
+* 4세대에는 최고의 일반 포켓몬이 있고, 3세대에는 최고의 전설에 포켓몬이 있다.
+  
+* 1~7세대 통틀어 뮤츠와 레쿠자가 최고의 포켓몬이다.
 
 
-
-## 2) 관측소별 화학적 산소농도 차이 시각화
-<h3 align="center"><img src= https://github.com/LHG-Git/project/assets/100845169/b16cd70a-8f7e-4527-9e8d-2d286685670d></h3>
-
-* 동해에 위치한 모든 관측치에서는 화학적 산소농도값이 정상범위(약 1.0)을 기록
-
-* 서해의 논산과 인천부근 그리고 남해의 부산과 창원부근의 관측치에서는 정상 수치보다 높은 화학적 산소 농도값이 기록된 것을 통해 화학적 산소농도 값이 위치적 특성에 따라 영향을 받는다는 것을 확인
-
-<br><br>
-
-# 📄 Modeling
-## 1) 군집화
-<h3 align="center"><img src= https://github.com/LHG-Git/project/assets/100845169/e22674c7-b20e-4298-b8bc-b7b9f2f4583a></h3>
-
-* 최적의 k값 도출을 위해 <strong>실루엣 계수</strong>를 사용<br> 
-* 이때 실루엣 계수 평균만을 고려하지 않았고 figure5를 통해 도출된 인사이트를 함께 고려<br>
-* 그 결과 cluster별 실루엣 계수 평균이 가장 높지는 않지만, 실루엣 계수의 너비가 비교적 균일한 지점에서 <strong>최적의 k(k=6)값을 도출</strong><br><br>
-
-<h3 align="center"><img src= https://github.com/LHG-Git/project/assets/100845169/909e7b1d-0b40-4745-abc5-f3652ef06a84></h3>
-
-* 최적의 K값을 통해 위치별 군집화 결과, figure 5에서 인천 부근의 서해에 위치한 관측치와, 부산 부근의 남해에 위치한 관측치에서 화학적 산소농도 수치가 높게 기록
-<br>
-
-## 2) 모델 성능 지표 선정
-* 성능 지표의 경우 본 프로젝트의 주제 자체가 ‘해양정보를 활용한 해양오염 예측’이기 때문에, 모델의 설명력을 나타내는 R2값 보다 실제 예측 오차의 크기인 MAE가 본 프로젝트와 맞는 지표라고 생각하여, <strong>MAE값을 기준으로 최종 모델을 선정</strong>
-<br>
-
-## 3) 최종 모델 선정
-<h3 align="center"><img src= https://github.com/LHG-Git/project/assets/100845169/da4b5525-0513-4615-a954-9778eadeda55></h3>
-
-* 최종 예측결과 전체 모델에서 훈련세트에 <strong>약간의 과적합 존재</strong><br>
-* <strong>CatBoost모델의 MAE값이 가장 준수</strong>
-* 해양오염 예측에 사용될 모델을 <strong>CatBoostRegressor로 선정</strong>
-<br>
-
-## 4) 하이퍼파라미터 튜닝
-* CatBoostRegressor모델의 특성상 하이퍼파라미터 튜닝을 진행하여도 모델 성능 개선에 크게 영향을 미치지 않음
-* 오히려 파라미터의 default값으로 모델 예측을 수행하였을 때, 성능이 가장 높게 측정됨
-<br>
-
-## 5) K-Fold 교차검증
-* 최종 선정된 모델(CatBoostRegressor)의 경우 train과 text의 성능 지표에서 약간의 과적합이 발생
-* 과적합을 방지하기 위해 valid data를 생성
-* 해당 데이터셋을 이용하여 가장 흔하게 사용되는 <strong>K-Fold 교차검증을 진행</strong>
-* <strong>K값은 5로 지정</strong>하였으며, 모델 진행시에 골고루 데이터의 특성을 반영하기 위하여 <strong>shuffle을 진행</strong>
-<br>
-
-## 6) 모델평가 및 검증
-<h3 align="center"><img src= https://github.com/LHG-Git/project/assets/100845169/1f3ca8e2-9710-404d-9425-d9a9d3f64cdf></h3>
-
-* <strong>하이퍼파라미터 튜닝 및 K-Fold교차검증을 통하여 모델 성능 최적화를 진행하여 과적합 개선</strong>
-
-* 그 결과 이전의 결과에서 보다 <strong>과적합이 많이 개선</strong>되었음을 확인하였고 <strong>모델의 성능 또한 향상됨</strong>
-
-* 성능 지표의 경우 본 프로젝트의 주제가 ‘해양정보를 활용한 해양오염 예측’ 이기 때문에, 모델의 설명력을 나타내는 R2값 보다 실제 예측 오차의 크기인 MAE가 본 프로젝트와 맞는 지표라고 판단
-
-* <strong>최종 모델링 결과 약 MAE = 0.076으로 실제값과 약 0.076이 차이가 나는 모델 완성</strong>
-
-* 최근 10년동안 국내 연안의 화학적 산소농도가 연평균 1.13~1.82mg/L인 것을 고려했을 때, 꽤 정확도가 높은 모델이라고 설명할 수 있음
 
 
